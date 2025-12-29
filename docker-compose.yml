@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  db:
+    image: mysql:5.7
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: meubanco
+    volumes:
+      - ./banco.sql:/docker-entrypoint-initdb.d/banco.sql
+    networks:
+      - app-network
+
+  php:
+    image: php:7.4-apache
+    container_name: php_app
+    volumes:
+      - ./index.php:/var/www/html/index.php
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx
+    container_name: nginx_proxy
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "4500:4500"
+    depends_on:
+      - php
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
